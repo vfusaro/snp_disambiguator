@@ -21,7 +21,7 @@ def main():
     input: snp_disambiguator <full allele table> <important alleles>
     output: prints to the screen 
         1: the set of ambiguous alleles and then for each allele the 
-        2: for each allele a list of tuples containing the column position 
+        2: for each allele a list of tuples containing the column position (zero-based)
         (from the full allele table) and the REF/SNP.   
     """
     
@@ -69,7 +69,8 @@ def main():
         important_alleles = []
         for line in iaf:
             important_alleles.append(line.strip())
-            
+    
+    # splits the alleles into 2 categories: ambiguous and not        
     ambiguous_alleles = []
     not_ambiguous_alleles = []
     for allele in important_alleles:
@@ -83,12 +84,19 @@ def main():
     # print 'ref allele name: ', ref_allele
     
     for allele in not_ambiguous_alleles:
-        set_diff = set.difference(alleles_by_haplotype[allele], 
-                                            alleles_by_haplotype[ref_allele])
-        format_output(allele, set_diff, ref_snps)
+        if allele in alleles_by_haplotype:
+            set_diff = set.difference(alleles_by_haplotype[allele], 
+                                      alleles_by_haplotype[ref_allele])
+            format_output(allele, set_diff, ref_snps)
+        else:
+            print 'This important allele (%s) was not found in the full halplotype table' % allele
                 
                 
 def format_output(allele, col_snp_set, ref_snps):
+    """
+    Formats the output to be the allele follwed by a list of tuples with column number and REF/SNP
+    ex: B*13090101	[(68, 'G/A'), (70, 'A/C')]
+    """
     col_snp_lst = []
     for pair in sorted(col_snp_set):
         col_snp_lst.append((pair[0], ref_snps[pair[0]]+'/'+pair[1]))
