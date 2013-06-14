@@ -56,9 +56,17 @@ Ambiguous:  []
 B*6-impt-double	[(1, 'C/T'), (10, 'G/A')]
 ```
 
-Evaluating all test cases simultaneously 
+An important allele is not found in the haplotype table
 ```python
 snp_disambiguator.py tests/HLAB_test_cases.txt tests/important_alleles_test_5.txt
+This important allele (B*7-NOT-FOUND) was not found in the full halplotype table
+Ambiguous:  []
+```
+
+Evaluating all test cases simultaneously 
+```python
+snp_disambiguator.py tests/HLAB_test_cases.txt tests/important_alleles_test_6.txt
+This important allele (B*7-NOT-FOUND) was not found in the full halplotype table
 Ambiguous:  ['B*1A-ambiguous', 'B*1B-ambiguous', 'B*2A-ambiguous', 'B*2B-ambiguous', 'B*2C-ambiguous']
 B*5-impt-single	[(10, 'G/A')]
 B*4-impt-single	[(2, 'T/A')]
