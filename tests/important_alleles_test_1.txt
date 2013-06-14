@@ -1,0 +1,5 @@
+B*1A-ambiguous
+B*1B-ambiguous
+B*2A-ambiguous
+B*2B-ambiguous
+B*2C-ambiguous
