@@ -27,5 +27,51 @@ B*18470101	[(23, 'T/C'), (29, 'G/T'), (32, 'A/G'), (68, 'G/T'), (87, 'A/G'), (10
 B*35840101	[(23, 'T/C'), (29, 'G/T'), (32, 'A/G'), (68, 'G/A'), (70, 'A/C'), (132, 'T/C'), (135, 'C/A'), (198, 'C/T'), (309, 'G/C'), (317, 'G/C'), (339, 'T/C'), (349, 'C/T'), (416, 'G/C'), (457, 'A/T')]
 ```
 
+##Test Cases
+Detecting multiple sets of ambiguous cases
+```python
+snp_disambiguator.py tests/HLAB_test_cases.txt tests/important_alleles_test_1.txt
+Ambiguous:  ['B*1A-ambiguous', 'B*1B-ambiguous', 'B*2A-ambiguous', 'B*2B-ambiguous', 'B*2C-ambiguous']
+```
+
+Ignoring the "*" (no call) positions and still returning differentiating positions
+```python
+snp_disambiguator.py tests/HLAB_test_cases.txt tests/important_alleles_test_2.txt
+Ambiguous:  []
+B*3-nocall	[(2, 'T/C'), (4, 'C/T'), (7, 'A/G')]
+```
+
+Two important alleles with a single differentiating position
+```python
+snp_disambiguator.py tests/HLAB_test_cases.txt tests/important_alleles_test_3.txt
+Ambiguous:  []
+B*5-impt-single	[(10, 'G/A')]
+B*4-impt-single	[(2, 'T/A')]
+```
+
+One important allele with two differentiating positions
+```python
+snp_disambiguator.py tests/HLAB_test_cases.txt tests/important_alleles_test_4.txt
+Ambiguous:  []
+B*6-impt-double	[(1, 'C/T'), (10, 'G/A')]
+```
+
+Evaluating all test cases simultaneously 
+```python
+snp_disambiguator.py tests/HLAB_test_cases.txt tests/important_alleles_test_5.txt
+Ambiguous:  ['B*1A-ambiguous', 'B*1B-ambiguous', 'B*2A-ambiguous', 'B*2B-ambiguous', 'B*2C-ambiguous']
+B*5-impt-single	[(10, 'G/A')]
+B*4-impt-single	[(2, 'T/A')]
+B*6-impt-double	[(1, 'C/T'), (10, 'G/A')]
+B*3-nocall	[(2, 'T/C'), (4, 'C/T'), (7, 'A/G')]
+```
+
 ##Copyright
 Copyright (c) 2013 Vincent Fusaro. Released under the MIT License.
+
+
+
+
+
+
+
