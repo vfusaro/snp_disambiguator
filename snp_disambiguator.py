@@ -22,8 +22,9 @@ def main():
     
     input: snp_disambiguator <haplotype table> <important alleles>
     output: prints to the screen 
-        1: the set of ambiguous alleles and then for each allele the 
-        2: for each allele a list of tuples containing the column position (zero-based)
+        1: the set of ambiguous alleles and then for each allele the
+        2: minimal haplotype set
+        3: for each allele a list of tuples containing the column position (zero-based)
         (from the full allele table) and the REF/SNP.   
     """
     parser = argparse.ArgumentParser()
@@ -49,11 +50,8 @@ def main():
     # compute the set difference for each allele
     allele_snp_diff = calc_set_difference(not_ambiguous_alleles, alleles_by_haplotype, ref_allele)
 
-    ####
+    # compute the minimum haplotype set
     min_list = minimum_haplotype_set(allele_snp_diff, alleles_haplotype_str, ref_snps)
-
-
-    ####
 
     # display the results
     format_output(ambiguous_alleles, allele_snp_diff, ref_snps, min_list)
@@ -232,6 +230,10 @@ def minimum_haplotype_set(allele_snp_diff, alleles_haplotype_str, ref_snps):
 
 
 def build_unimportant_set(unimportant_alleles, alleles_haplotype_str, columns, ref_snps):
+    """
+    Constructs the entire set of unimportant alleles for a given set of columns.  Substitutes '_' (dashes) with the
+    actual reference value to avoid separating based on dashes instead of actual bases.
+    """
     unimportant = set()
     for allele in unimportant_alleles:
         substr = ''
@@ -246,7 +248,17 @@ def build_unimportant_set(unimportant_alleles, alleles_haplotype_str, columns, r
 
     return unimportant
 
+
 def build_substring(haplotype, columns, ref_snps):
+    """
+    Constructs a single substring from a given haplotype using columns provided.  Dashes are replaced by reference seq.
+    Input:
+        haplotype: GC---T---CC
+        columns: (1,3,5)
+        ref_snps: TTAAAGAAAGT
+    Output:
+        CAT (ha!)
+    """
     substr = ''
     for col in columns:
         if haplotype[col] not in ['*']:
