@@ -50,13 +50,13 @@ def main():
     allele_snp_diff = calc_set_difference(not_ambiguous_alleles, alleles_by_haplotype, ref_allele)
 
     ####
-    minimum_haplotype_set(allele_snp_diff, alleles_haplotype_str)
+    min_list = minimum_haplotype_set(allele_snp_diff, alleles_haplotype_str, ref_snps)
 
 
     ####
 
     # display the results
-    format_output(ambiguous_alleles, allele_snp_diff, ref_snps)
+    format_output(ambiguous_alleles, allele_snp_diff, ref_snps, min_list)
 
     ### end main steps ###
     
@@ -146,11 +146,16 @@ def calc_set_difference(not_ambiguous_alleles, alleles_by_haplotype, ref_allele)
     return allele_snp_diff
             
 
-def minimum_haplotype_set(allele_snp_diff, alleles_haplotype_str):
+def minimum_haplotype_set(allele_snp_diff, alleles_haplotype_str, ref_snps):
     """
-    allele_snp_diff contains the sets for all the important alleles
-    need to get the unimportant set as well...
+    Attempts to find the minimum number of haplotypes necessary to differentiate between important alleles and
+    unimportant as well as between the important alleles.  The method selected is a brute force check all
+    combinations (not ideal...).  The method starts by using the unique combination of the full haplotypes and
+    attempts to reduce the number of SNPs needed in decreasing order.  The method exits early as soon as a
+    valid minimum haplotype is found.
 
+    The search method could (should) be further optimized and it strikes me that this might similar to a tree-based
+    search method (from an AI class I took).
     """
 
     # create a unique set of columns that represents the maximum haplotype set for the important alleles
@@ -159,79 +164,109 @@ def minimum_haplotype_set(allele_snp_diff, alleles_haplotype_str):
         for pair in col_snp_set:
             haplotype_column.add(pair[0])
 
+    min_list = list(sorted(haplotype_column))
+
     # crazy brute force method
     n = len(haplotype_column)
-    print haplotype_column
-    # check for n=1 or 0 ???
 
-    min_list = list(sorted(haplotype_column))
-    all_passed = False
-    end_early = False
+    # set an arbitrary threshold that should finish in a reasonable amount of time
+    if n <= 15:
+        brute_force = True
+    else:
+        # ideally, switch to clever heuristic or some type of tree searching method.
+        # in this case just return the full unique list
+        print 'Too many combinations...returning the full haplotype set'
+        brute_force = False
+        return min_list
+
+    unimportant_alleles = []
+    for allele in alleles_haplotype_str:
+        if allele not in allele_snp_diff:
+            unimportant_alleles.append(allele)
 
     # loop backwards from n
     for i in range(n-1, 0, -1):
         # calculate all combinations of n-1, n-2, n-3, ... 1
         # stop when all combination at a given level fail - then the previous (higher up) level is the minimum set
         combinations = list(itertools.combinations(sorted(haplotype_column), i))
+        pass_fail = []
         for item in combinations:
-            important_list = set()
+            important_set = set()
+            unimportant_set = build_unimportant_set(unimportant_alleles, alleles_haplotype_str, item, ref_snps)
+            # print unimportant_set
             for allele in allele_snp_diff:
-                substr = build_substring(alleles_haplotype_str[allele], item)
-                print allele, item, substr
-
-                ### need to construct an unimportant set which contains everything then compare
-                if substr not in important_list:
-                    important_list.add(substr)
+                substr = build_substring(alleles_haplotype_str[allele], item, ref_snps)
+                # print allele, item, substr
+                if substr not in unimportant_set:
+                    # good - we can differentiate between important and unimportant
+                    if substr not in important_set:
+                        # great - we can further differentiate between the important alleles
+                        important_set.add(substr)
+                    else:
+                        # fail - can't differentiate important alleles from each other but we can differentiate
+                        # important from unimportant.
+                        # not sure what the proper action is here...
+                        # print 'Can only say this is an important allele: ', allele, item, substr
+                        pass_fail.append('Fail')
+                        break
                 else:
-                    # fail
-                    print 'fail'
-                    all_passed = False
+                    # fail - can't differentiate important from unimportant
+                    pass_fail.append('Fail')
                     break
             else:
                 # all alleles passed
-                all_passed = True
-
+                # this is only keeping track of the first haplotype set.  In practice there is likely multiple
+                # haplotype sets that would be sufficient and to obtain the minimal cost would require additional
+                # knowledge about primers already made, if some are more problematic than others, etc...
+                # to a first approximation this seems reasonable and could be extended depending on formats and so on
+                pass_fail.append('Pass')
                 if len(item) < len(min_list):
                     min_list = item
 
-        if end_early:
-            print 'ending early...hopefully'
+        if 'Pass' in pass_fail:
+            continue
+        else:
             break
 
-        if all_passed == False and not end_early:
-            print 'failed one level...checking next level'
-            end_early = True
+    return min_list
 
-    print 'Minimum haplotype (columns) ', min_list
 
-    # lookup sequences as a string? based on position combinations
+def build_unimportant_set(unimportant_alleles, alleles_haplotype_str, columns, ref_snps):
+    unimportant = set()
+    for allele in unimportant_alleles:
+        substr = ''
+        for col in columns:
+            if alleles_haplotype_str[allele][col] not in ['*']:
+                if alleles_haplotype_str[allele][col] == '_':
+                    substr = substr + ref_snps[col]
+                else:
+                    substr = substr + alleles_haplotype_str[allele][col]
 
-    # keep track of important things in a set, check for existence first, if exists fail, else add
-    # also need to check if the set exists among the unimportant group (everything else...)
+        unimportant.add(substr)
 
-    # might be degenerate sets that are equivalent
-        # pick one
-        # show all
-        # among the degenerate set you might already have primers made thus reducing the cost
-        # some might fail and you might need additional backup choices
+    return unimportant
 
-def build_substring(haplotype, columns):
+def build_substring(haplotype, columns, ref_snps):
     substr = ''
     for col in columns:
         if haplotype[col] not in ['*']:
-            substr = substr + haplotype[col]
+            if haplotype[col] == '_':
+                substr = substr + ref_snps[col]
+            else:
+                substr = substr + haplotype[col]
 
     return substr
 
 
-def format_output(ambiguous_alleles, allele_snp_diff, ref_snps):
+def format_output(ambiguous_alleles, allele_snp_diff, ref_snps, min_list):
     """
     Displays the ambiguous alleles and then formats the output to be the allele follwed by a 
     list of tuples with column number and REF/SNP
     ex: B*13090101	[(68, 'G/A'), (70, 'A/C')]
     """
     print 'Ambiguous: ', ambiguous_alleles
-    
+    print 'Minimum haplotype (columns) ', min_list
+
     for allele, col_snp_set in allele_snp_diff.iteritems():
         col_snp_lst = []
         for pair in sorted(col_snp_set):
