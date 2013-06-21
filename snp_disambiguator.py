@@ -168,13 +168,10 @@ def minimum_haplotype_set(allele_snp_diff, alleles_haplotype_str, ref_snps):
     n = len(haplotype_column)
 
     # set an arbitrary threshold that should finish in a reasonable amount of time
-    if n <= 15:
-        brute_force = True
-    else:
+    if n > 15:
         # ideally, switch to clever heuristic or some type of tree searching method.
         # in this case just return the full unique list
         print 'Too many combinations...returning the full haplotype set'
-        brute_force = False
         return min_list
 
     unimportant_alleles = []
