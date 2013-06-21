@@ -11,3 +11,5 @@ B*3-nocall	*	*	C	_	T	|	_	G	_	*	_
 B*4-impt-single	_	_	A	_	_	|	_	_	_	_	_
 B*5-impt-single	_	_	_	_	_	|	_	_	_	_	A
 B*6-impt-double	_	T	_	_	_	|	_	_	_	_	A
+B*7-impt-single	_	_	_	_	G	|	_	_	_	_	_
+

@@ -73,6 +73,12 @@ B*4-impt-single	[(2, 'T/A')]
 B*6-impt-double	[(1, 'C/T'), (10, 'G/A')]
 B*3-nocall	[(2, 'T/C'), (4, 'C/T'), (7, 'A/G')]
 ```
+## Special cases to consider
+
+1. Ambiguous (or can't make a call because the allele is identical to another) - might be worth noting if this allele is
+part of the important/unimportant set.  At a minimum you might be able to say it's important but can't differentiate it
+
+
 
 ##Copyright
 Copyright (c) 2013 Vincent Fusaro. Released under the MIT License.
